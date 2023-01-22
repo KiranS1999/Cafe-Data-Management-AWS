@@ -1,0 +1,15 @@
+name: Run script
+
+on:
+  push: 
+    branches:
+      - main
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Run script
+      run: sh ../script/script.sh 

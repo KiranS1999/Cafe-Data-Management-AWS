@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:14.1-alpine
+    container_name: postgressql_container
+    restart: always
+    environment:
+      POSTGRES_USER: 'root'
+      POSTGRES_PASSWORD: 'password'
+      POSTGRES_ROOT_PASSWORD: "${postgressql_pass}"
+      POSTGRES_DATABASE: "${postgressql_db}"
+    ports:
+      - "5432:5432" 
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - type: volume
+        source: my_db
+        target: /var/lib/postgressql
+  adminer:
+    image: adminer
+    container_name: adminer_container
+    restart: always
+    ports:
+      - 8080:8080
+volumes:
+  my_db:

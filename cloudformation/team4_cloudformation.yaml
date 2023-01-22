@@ -1,0 +1,190 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description:  
+  Template to deploy a lambda which is triggered by an S3 event 
+   
+Parameters:
+  DeploymentBucket:
+    Type: String
+    Description: Enter the name of the S3 bucket where your deployment package is.
+  DeploymentPackageKeyTransform:
+    Type: String
+    Description: Enter the name of the S3 key of Transform Lambda.
+  DeploymentPackageKeyLoad:
+    Type: String
+    Description: Enter the name of the S3 key of Load Lambda.  
+  BucketName1:
+    Type: String
+    Description: Enter the name of S3 bucket for raw csv files
+  BucketName2:
+    Type: String
+    Description: Enter the name of S3 bucket for ready to load csv files 
+  dbname:
+    Type: String
+    Description: Enter the name of your database.
+  user:
+    Type: String
+    Description: Enter the name of your db user.
+  host:
+    Type: String
+    Description: Enter the name of your host.
+  password:
+    Type: String
+    Description: Enter the name of your database password
+  InstanceSecurityGroup:
+    Type: String
+    Description:  Enter the name of your VPC security group
+  SubnetID:
+    Type: String
+    Description: Enter the name of your VPC subnet ID
+
+Resources:
+  LambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+        - arn:aws:iam::aws:policy/AmazonRedshiftDataFullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole
+        - arn:aws:iam::aws:policy/AmazonSQSFullAccess
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+          Action:
+            - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: LambdaTeamPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - s3:GetObject
+              - s3:ListBucket
+              - s3:PutObject
+            Resource: '*'    
+  
+  LambdaFunction1:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: team4-extract-transform
+      Runtime: python3.9
+      Handler: lambda_function.handler
+      Role: !GetAtt LambdaFunctionRole.Arn
+      Environment:
+        Variables:
+          dbname: !Ref dbname
+          user: !Ref user
+          host: !Ref host
+          password: !Ref password
+          bucket: !Ref BucketName2
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: !Ref DeploymentPackageKeyTransform
+      Layers:
+        - arn:aws:lambda:eu-west-1:239598709205:layer:SQLAlchemy:1
+        - arn:aws:lambda:eu-west-1:239598709205:layer:python_39_psycopg2_layer:1
+        - arn:aws:lambda:eu-west-1:336392948345:layer:AWSSDKPandas-Python39:2
+      VpcConfig:
+          SecurityGroupIds:
+            - !Ref InstanceSecurityGroup
+          SubnetIds:
+            - !Ref SubnetID
+      Timeout: 300 
+  
+  LambdaFunction2:
+      Type: AWS::Lambda::Function
+      Properties:
+        FunctionName: team4-load
+        Runtime: python3.9
+        Handler: lambda_function.handler
+        Role: !GetAtt LambdaFunctionRole.Arn
+        Environment:
+          Variables:
+            dbname: !Ref dbname
+            user: !Ref user
+            host: !Ref host
+            password: !Ref password
+            bucket: !Ref BucketName2
+        Code:
+          S3Bucket: !Ref DeploymentBucket
+          S3Key: !Ref DeploymentPackageKeyLoad
+        Layers:
+          - arn:aws:lambda:eu-west-1:239598709205:layer:SQLAlchemy:1
+          - arn:aws:lambda:eu-west-1:239598709205:layer:python_39_psycopg2_layer:1
+          - arn:aws:lambda:eu-west-1:336392948345:layer:AWSSDKPandas-Python39:2
+        VpcConfig:
+            SecurityGroupIds:
+              - !Ref InstanceSecurityGroup
+            SubnetIds:
+              - !Ref SubnetID
+        Timeout: 300       
+  
+  S3Bucket1:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName1
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt LambdaFunction1.Arn    
+  
+  S3Bucket2:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName2
+
+  
+  S3BucketPermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaFunction1
+      Principal: s3.amazonaws.com
+      SourceArn: !GetAtt S3Bucket1.Arn
+  
+  TransformBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket2
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - 
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:ListBucket'
+            Effect: Allow
+            Resource: 
+              - !Sub arn:aws:s3:::${S3Bucket2}
+              - !Sub arn:aws:s3:::${S3Bucket2}/*
+            Principal:
+              AWS:
+                - '*'
+  
+  LambdaFunctionEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      Enabled: true
+      EventSourceArn: !GetAtt MyQueue.Arn
+      FunctionName: !GetAtt LambdaFunction2.Arn
+
+  MyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: 'team4.fifo'
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      DelaySeconds: 0
+      VisibilityTimeout: 900

@@ -1,0 +1,39 @@
+- Create database 
+CREATE DATABASE cafe_team4;
+
+ — Create new schema in Redshift DB
+ 
+DROP SCHEMA IF EXISTS cafe CASCADE;
+CREATE SCHEMA cafe;
+SET search_path = cafe;
+
+— Create (3) tables in Redshift DB
+    
+      CREATE TABLE  product_data(
+            id INT IDENTITY,
+            product_name VARCHAR(200),
+            Product_flavour VARCHAR(200),
+            Price numeric(10,2),
+            PRIMARY KEY(id)
+        );
+       
+   
+        CREATE TABLE IF NOT EXISTS transaction_data(
+            id INT IDENTITY,
+            date DATE,
+            time TIME,
+            branch_location VARCHAR(200),
+            total_spend numeric(10,2),
+            payment_method VARCHAR(200),
+            primary key(id)     
+        );
+   
+  
+        CREATE TABLE IF NOT EXISTS order_data(
+            id INT IDENTITY,
+            transaction_id INT,
+            product_id INT,
+            PRIMARY KEY(id),
+            FOREIGN KEY(transaction_id) REFERENCES transaction_data(id),
+            FOREIGN KEY(product_id) REFERENCES product_data(id)
+        );
