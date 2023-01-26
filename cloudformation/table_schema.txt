@@ -37,3 +37,29 @@ SET search_path = cafe;
             FOREIGN KEY(transaction_id) REFERENCES transaction_data(id),
             FOREIGN KEY(product_id) REFERENCES product_data(id)
         );
+        
+#### DBMl: Database Markup Langauge ####
+
+TABLE  product_data {
+    id INT [PK]
+    product_name VARCHAR (200)
+    Product_flavour VARCHAR (200)
+    Price NUMERIC (10,2)
+    PRIMARY KEY(id) 
+}
+
+TABLE transaction_data {
+    id INT [PK]
+    date DATE
+    time TIME
+    branch_location VARCHAR(200)
+    total_spend NUMERIC (10,2)
+    payment_method VARCHAR(200)
+ 
+}
+
+TABLE  order_data {
+    id INT [PK]
+    transaction_id INT (ref: < transaction_data.id)
+    product_id INT (ref: < product_data.id)
+}
