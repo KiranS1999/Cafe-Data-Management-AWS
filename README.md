@@ -48,6 +48,9 @@ Current Set-Up:
 
 ![Control-V (1)](https://user-images.githubusercontent.com/114569343/213548528-20fe7772-3417-44c4-86f6-2ec48655a9c7.png)
 
+## Table Schema
+![Untitled (1)](https://user-images.githubusercontent.com/114569343/214832903-4a0eb541-5ac8-4848-8cc5-91e8c459c5ea.png)
+
 ## Getting Started
 
 -Must haves:
