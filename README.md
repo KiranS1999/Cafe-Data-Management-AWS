@@ -37,7 +37,8 @@ Current Set-Up:
         - Redshift
         - IAM
     - Python
-![Control-V](https://user-images.githubusercontent.com/114569343/213544797-68037c66-7360-48a8-9202-a68e45f25cc3.png) 
+
+![ETL pipeline](https://user-images.githubusercontent.com/114569343/218149477-b014fe41-3819-41a3-859a-61ff083a6048.PNG)
 
 - Data Analytics (+ Infrastructure Metrics):
     - AWS:
@@ -46,7 +47,7 @@ Current Set-Up:
     - Docker
     - Grafana
 
-![Control-V (1)](https://user-images.githubusercontent.com/114569343/213548528-20fe7772-3417-44c4-86f6-2ec48655a9c7.png)
+![Grafana](https://user-images.githubusercontent.com/114569343/218149462-99298b32-cde1-45b8-82a1-1df1c98bf015.PNG)
 
 ## Table Schema
 ![Untitled (1)](https://user-images.githubusercontent.com/114569343/214832903-4a0eb541-5ac8-4848-8cc5-91e8c459c5ea.png)
