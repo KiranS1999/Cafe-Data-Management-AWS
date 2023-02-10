@@ -49,8 +49,8 @@ Current Set-Up:
 
 ![Grafana](https://user-images.githubusercontent.com/114569343/218149462-99298b32-cde1-45b8-82a1-1df1c98bf015.PNG)
 
-## Table Schema
-![Untitled (1)](https://user-images.githubusercontent.com/114569343/214832903-4a0eb541-5ac8-4848-8cc5-91e8c459c5ea.png)
+## Table Schema (Star)
+![drawSQL-aws-export-2023-02-10](https://user-images.githubusercontent.com/114569343/218153643-7c4935e6-526c-401a-b51e-baf582044daa.png)
 
 ## Getting Started
 
