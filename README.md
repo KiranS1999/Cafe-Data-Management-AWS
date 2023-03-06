@@ -70,3 +70,7 @@ aws cloudformation deploy --stack-name team4-stack --template-file cloudformatio
 - Include --parameter overrided tag with correct file names 
 - ETL code is specific to a certain CSV format: see test data folder
 
+## Authors
+- Kiran: CloudFormation, ETL Python script, Grafana Dashboard
+- Deen, Luca: AWS SQS, Grafana Dashboard
+- Suleman: CI/CD 
